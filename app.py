@@ -6,14 +6,15 @@ from flask import Flask
 from flask_login import LoginManager
 from werkzeug.security import generate_password_hash
 from database import db, User
+from extensions import limiter, csrf
 import os
+from dotenv import load_dotenv
 
 # ---- Create and configure the Flask app ----
 app = Flask(__name__)
 
-# Secret key is used for session security and CSRF tokens
-# In a real project, store this in an environment variable
-app.config['SECRET_KEY'] = 'library_secret_key_2024'
+load_dotenv()
+app.config['SECRET_KEY'] = os.environ.get('FLASK_APP_KEY')
 
 # SQLite database - stored as a local file (easy for college projects)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///library.db'
@@ -21,6 +22,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Connect the database to the app
 db.init_app(app)
+
+# ---- Enable CSRF Protection on all forms ----
+# Prevents Cross-Site Request Forgery attacks on every POST form
+csrf.init_app(app)
+
+# ---- Login Rate Limiting ----
+# Max 10 login attempts per minute per IP - stops brute-force attacks
+limiter.init_app(app)
 
 # ---- Setup Flask-Login (handles sessions) ----
 login_manager = LoginManager()
@@ -52,13 +61,16 @@ with app.app_context():
         admin = User(
             name='Library Admin',
             email='admin@library.com',
-            password=generate_password_hash('admin123'),  # hashed password
+            password=generate_password_hash('Admin@15'),  # hashed password
             role='admin'
         )
         db.session.add(admin)
         db.session.commit()
-        print("Default admin created: admin@library.com / admin123")
+        print("Default admin created: admin@library.com")
 
 # ---- Run the app ----
 if __name__ == '__main__':
-    app.run(debug=True)  # debug=True gives helpful error messages during development
+    # debug is read from .env - set DEBUG=True only during development
+    # In production this must be False to hide error details from users
+    debug_mode = os.environ.get('DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode)

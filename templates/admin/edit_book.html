@@ -9,6 +9,7 @@
 
 <div class="form-card">
     <form method="POST" action="{{ url_for('admin.edit_book', book_id=book.id) }}" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         <div class="form-group">
             <label for="title">Book Title *</label>

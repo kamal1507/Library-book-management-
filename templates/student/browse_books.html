@@ -67,6 +67,7 @@
                     <!-- Request form -->
                     <form method="POST" action="{{ url_for('student.issue_book', book_id=book.id) }}"
                           style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-sm btn-primary">Request</button>
                     </form>
                 {% else %}

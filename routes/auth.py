@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import db, User
+from extensions import limiter
 import re
 
 auth_bp = Blueprint('auth', __name__)
@@ -23,6 +24,7 @@ def index():
 
 # ---- Login Page ----
 @auth_bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit('10 per minute')   # max 10 login attempts per minute per IP
 def login():
     # If already logged in, go to dashboard
     if current_user.is_authenticated:

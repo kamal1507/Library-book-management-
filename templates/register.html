@@ -8,6 +8,8 @@
         <p class="auth-subtitle">Register as a student</p>
 
         <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+            <!-- Real CSRF token - blocks forged cross-site form submissions -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="form-group">
                 <label for="name">Full Name</label>
